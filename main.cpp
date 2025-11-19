@@ -1,102 +1,94 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include "Boletos.h" //para llamar a la clase boletos
+#include <random>
 #include "Vuelos.h"
 using namespace std;
 
-int main () {
-    int opc;
-    Boletos BoletosVIP("VIP", 3500, 50);
-    Boletos BoletosNormal("Normal", 1200, 300);
-    do {
-        cout<<"----------AEROLINEA (NOMBRE)----------"<<endl;
-        cout<<"---Bienvenido que desea realizar---"<<endl;
-        cout<<"1.Boletos"<<endl;
-        cout<<"2.Vuelos disponibles"<<endl;
-        cout<<"3.Salir"<<endl;
-        cout<<"Ingrese la opcion: ";
-        cin>>opc;
-        switch(opc){
-            case 1:
-            int opc_Boleto;
-            do {
-                cout << "\n---- AEROLÍNEA ----\n";
-                cout<<"Seleccionar boleto: "<<endl;
-                cout<<"1.VIP(50 asientos)"<<endl;
-                cout<<"2.NORMAL(300 asientos)"<<endl;
-                cout<<"3.Regresar"<<endl;
-                cout<<"Ingrese el tipo de boleto a seleccionar o regrese: ";
-                cin>>opc_Boleto;
+struct StatsCliente {
+    int id;
+    int vip = 0;
+    int normal = 0;
+    double gasto = 0;
+};
 
-                if (opc_Boleto == 3) {
-                    cout << "Saliendo del apartado de Boletos...\n";
-                    break;
-                }
-                if (opc_Boleto != 1 && opc_Boleto != 2) {
-                    cout << "Opcion invalida\n";
-                    continue;
-                }
+void clienteFuncion(int id, Vuelos* vuelos, StatsCliente* stats) {
 
-                Boletos* vueloSeleccionado = (opc_Boleto == 1) ? &BoletosVIP : &BoletosNormal;
-                vueloSeleccionado->mostrarMapa();
-                //pasa saber cuantos pasejeros para subir a un avión
-                int numClientes;
-                cout << "Ingrese el numero de pasajeros: "<<endl;
-                cin >> numClientes;
+    stats->id = id;
 
-                vector<thread> clientes;
-                clientes.reserve(numClientes);
+    static thread_local mt19937 rng(
+        (unsigned)chrono::steady_clock::now().time_since_epoch().count() + id
+    );
 
-                for (int i = 1; i <= numClientes; i++) {
-                    clientes.emplace_back(&Boletos::comprarAsiento,vueloSeleccionado, i);
-                }
+    uniform_int_distribution<int> pickVuelo(0, vuelos->totalVuelos() - 1);
+    uniform_int_distribution<int> pickTipo(0, 1); // 0=VIP, 1=Normal
 
-                for (auto& c : clientes) {
-                    c.join();
-                }
+    for (int i = 0; i < 6; i++) {
 
-                // Mostrar el mapa final
-                vueloSeleccionado->mostrarMapa();
-            }while (opc_Boleto !=3);
-            break;
-                //este caso es para ver los vuelos que estan
-            case 2:
-                int opc_vuelo;
-                do {
-                    cout << "\n---- AEROLÍNEA ----\n";
-                    cout << "1. Ver vuelos disponibles\n";
-                    cout << "2. Salir\n";
-                    cout << "Ingrese opción: ";
-                    cin >> opc_vuelo;
+        int v = pickVuelo(rng);
+        int tipo = pickTipo(rng);
 
-                    if (opc == 1) {
-                        Vuelos vuelos;
-                        vuelos.mostrarVuelos();
+        VueloDatos& vuelo = (*vuelos)[v];
 
-                        int idVuelo;
-                        cout << "Seleccione un vuelo: ";
-                        cin >> idVuelo;
+        bool ok;
 
-                        auto* vuelo = vuelos.seleccionarVuelo(idVuelo);
-
-                        if (!vuelo) {
-                            cout << "Vuelo inválido\n";
-                            continue;
-                        }
-
-                        vuelo->mostrarAsientos();
-                        vuelo->comprarAsientos();
-                        vuelo->mostrarAsientos();
-                    }
-
-
-                }while (opc_vuelo != 2);
-
+        if (tipo == 0) {
+            ok = vuelo.comprarVIP(id);
+            if (ok) {
+                stats->vip++;
+                stats->gasto += vuelo.getPrecioVIP();
+            }
         }
-    }while (opc != 3);
-    if (opc==3) {
-        cout<<"Gracias por ocupar nuestra aerolinea"<<endl;
+        else {
+            ok = vuelo.comprarNormal(id);
+            if (ok) {
+                stats->normal++;
+                stats->gasto += vuelo.getPrecioNormal();
+            }
+        }
+
+        this_thread::sleep_for(50ms);
     }
-return 0;
+}
+
+int main() {
+
+    Vuelos vuelos;
+
+    int numClientes;
+    cout << "Ingrese número de clientes (10, 30 o 50): ";
+    cin >> numClientes;
+
+    vector<StatsCliente> stats(numClientes);
+    vector<thread> hilos;
+    hilos.reserve(numClientes);
+
+    cout << "\nSimulando horarios...\n";
+    this_thread::sleep_for(3s);
+    cout << "Mañana...\n";
+    this_thread::sleep_for(3s);
+    cout << "Tarde...\n";
+    this_thread::sleep_for(3s);
+    cout << "Noche...\n\n";
+
+    for (int i = 0; i < numClientes; i++)
+        hilos.emplace_back(clienteFuncion, i+1, &vuelos, &stats[i]);
+
+    for (auto& h : hilos) h.join();
+
+    cout << "\n=== ESTADÍSTICAS POR CLIENTE ===\n";
+    for (auto& s : stats) {
+        cout << "Cliente " << s.id
+             << " | VIP=" << s.vip
+             << " | NORMAL=" << s.normal
+             << " | Gasto=$" << s.gasto << "\n";
+    }
+
+    vuelos.mostrarVuelos();
+
+    cout << "\n=== ESTADO FINAL DE ASIENTOS ===\n";
+    for (int i = 0; i < vuelos.totalVuelos(); i++)
+        vuelos[i].mostrarAsientos();
+
+    return 0;
 }

@@ -1,37 +1,22 @@
-//
-// Created by fer on 18/11/2025.
-//
+#ifndef VUELOS_H
+#define VUELOS_H
 
-#ifndef C___CLION__VUELOS_H
-#define C___CLION__VUELOS_H
-#include <string>
 #include <vector>
-#include<mutex>
-#include "Boletos.h"
-using namespace std;
-class VueloDatos {
-private:
-    string destino;
-    Boletos boletos;
-public:
-    VueloDatos(string destino, string tipo,double precio, int asiento);
+#include <memory>
+#include "VueloDatos.h"
 
-    //VueloDatos();
-
-    string getDestino();
-    void mostrarAsientos();
-    void comprarAsientos();
-};
 class Vuelos {
 private:
-    vector <VueloDatos> lista;
+    std::vector<std::unique_ptr<VueloDatos>> lista;
+
 public:
     Vuelos();
 
+    int totalVuelos() const { return lista.size(); }
+
+    VueloDatos& operator[](int i) { return *lista[i]; }
+
     void mostrarVuelos();
-    VueloDatos * seleccionarVuelo(int id);
 };
 
-
-
-#endif //C___CLION__VUELOS_H
+#endif
