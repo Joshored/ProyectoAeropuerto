@@ -3,9 +3,9 @@
 using namespace std;
 
 VueloDatos::VueloDatos(string destino_, string horario_,
-                       Boletos vip, Boletos normal)
+                       Boletos&& vip, Boletos&& normal)
     : destino(destino_), horario(horario_),
-      boletosVIP(vip), boletosNormal(normal) {}
+      boletosVIP(std::move(vip)), boletosNormal(std::move(normal)) {}
 
 bool VueloDatos::comprarVIP(int idCliente) {
     return boletosVIP.comprarAsiento(idCliente);

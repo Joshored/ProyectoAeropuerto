@@ -13,8 +13,9 @@ private:
     Boletos boletosNormal;
 
 public:
+    // Constructor modificado para usar move semantics
     VueloDatos(std::string destino_, std::string horario_,
-               Boletos vip, Boletos normal);
+               Boletos&& vip, Boletos&& normal);
 
     bool comprarVIP(int idCliente);
     bool comprarNormal(int idCliente);

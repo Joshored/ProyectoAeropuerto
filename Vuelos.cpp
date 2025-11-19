@@ -4,7 +4,7 @@ using namespace std;
 
 Vuelos::Vuelos() {
 
-    vector<string> destinos = { "Japan", "Brasil", "CU2" };
+    vector<string> destinos = { "Japon", "Brasil", "CU2" };
     vector<string> horarios = { "Mañana", "Tarde", "Noche" };
 
     for (const auto& d : destinos) {
