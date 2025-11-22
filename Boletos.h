@@ -1,3 +1,4 @@
+// Clase Boletos para manejar la compra de asientos
 #ifndef BOLETOS_H
 #define BOLETOS_H
 
@@ -5,15 +6,17 @@
 #include <string>
 #include <mutex>
 
+// Clase Boletos para manejar la compra de asientos
 class Boletos {
 private:
-    std::string tipo;
-    double precio;
-    int numAsientos;
+    std::string tipo; // tipo de boleto (VIP o Normal)
+    double precio; // precio del boleto
+    int numAsientos; // número total de asientos
     std::vector<int> asientos;   // 0 = libre, idCliente = ocupado
-    std::mutex mtx;
+    std::mutex mtx; // mutex para sincronización
 
 public:
+
     Boletos(std::string t, double p, int n);
 
     // Constructor de movimiento
@@ -30,11 +33,11 @@ public:
 
     bool comprarAsiento(int idCliente);   // devuelve true si se pudo comprar
 
-    void mostrarMapa();
+    void mostrarMapa(); // muestra el mapa de asientos
 
     int getNumAsientos() const { return numAsientos; }
-    double getPrecio() const { return precio; }
-    std::string getTipo() const { return tipo; }
+    double getPrecio() const { return precio; } // devuelve el precio del boleto
+    std::string getTipo() const { return tipo; } // devuelve el tipo de boleto
 };
 
 #endif
