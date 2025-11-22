@@ -6,10 +6,10 @@ using namespace std;
 // Constructor modificado para usar move semantics
 VueloDatos::VueloDatos(string destino_, string horario_,
                        Boletos&& vip, Boletos&& normal)
-    : destino(destino_), horario(horario_), // Inicializa los atributos de destino y horario
-      boletosVIP(std::move(vip)), boletosNormal(std::move(normal)) {} // Mueve los objetos Boletos
+    : destino(destino_), horario(horario_),
+      boletosVIP(std::move(vip)), boletosNormal(std::move(normal)) {}
 
-// para evitar copias innecesarias
+// Compra un asiento VIP para el cliente con idCliente
 bool VueloDatos::comprarVIP(int idCliente) {
     return boletosVIP.comprarAsiento(idCliente);
 }
@@ -19,9 +19,14 @@ bool VueloDatos::comprarNormal(int idCliente) {
     return boletosNormal.comprarAsiento(idCliente);
 }
 
+// Verifica si el vuelo está completamente lleno
+bool VueloDatos::estaLleno() const {
+    return boletosVIP.estaLleno() && boletosNormal.estaLleno();
+}
+
 // Muestra el mapa de asientos del vuelo
 void VueloDatos::mostrarAsientos() {
-    cout << "\n=== " << destino << " (" << horario << ") ===\n"; // Muestra el encabezado con destino y horario
-    boletosVIP.mostrarMapa(); // Muestra el mapa de asientos VIP
-    boletosNormal.mostrarMapa(); // Muestra el mapa de asientos normales
+    cout << "\n=== " << destino << " (" << horario << ") ===\n";
+    boletosVIP.mostrarMapa();
+    boletosNormal.mostrarMapa();
 }

@@ -9,14 +9,14 @@
 // Clase Boletos para manejar la compra de asientos
 class Boletos {
 private:
-    std::string tipo; // tipo de boleto (VIP o Normal)
-    double precio; // precio del boleto
-    int numAsientos; // número total de asientos
+    std::string tipo;
+    double precio;
+    int numAsientos;
     std::vector<int> asientos;   // 0 = libre, idCliente = ocupado
-    std::mutex mtx; // mutex para sincronización
+    int asientosOcupados;         // contador de asientos ocupados
+    std::mutex mtx;
 
 public:
-
     Boletos(std::string t, double p, int n);
 
     // Constructor de movimiento
@@ -25,19 +25,20 @@ public:
           precio(other.precio),
           numAsientos(other.numAsientos),
           asientos(std::move(other.asientos)),
-          mtx() {}  // mutex se inicializa vacío
+          asientosOcupados(other.asientosOcupados),
+          mtx() {}
 
     // Eliminar constructor de copia y operador de asignación
     Boletos(const Boletos&) = delete;
     Boletos& operator=(const Boletos&) = delete;
 
-    bool comprarAsiento(int idCliente);   // devuelve true si se pudo comprar
-
-    void mostrarMapa(); // muestra el mapa de asientos
+    bool comprarAsiento(int idCliente);
+    bool estaLleno() const; // verifica si todos los asientos están ocupados
+    void mostrarMapa();
 
     int getNumAsientos() const { return numAsientos; }
-    double getPrecio() const { return precio; } // devuelve el precio del boleto
-    std::string getTipo() const { return tipo; } // devuelve el tipo de boleto
+    double getPrecio() const { return precio; }
+    std::string getTipo() const { return tipo; }
 };
 
 #endif
